@@ -1,7 +1,6 @@
 from collections.abc import Iterator
-import sys
-from typing import List
 from itertools import combinations
+from typing import List
 
 
 class Lot:
@@ -30,6 +29,8 @@ class Lot:
         погашение стоимости акции = стоимость покупки лота -
         количество лотов * 1000 у.е.
         доход = чистая прибыль - погашение стоимости акции
+        :param predicated_n_days: количество дней предложений N
+        :return : финальная прибыль данного лота
         '''
         # прибыль на N+30 день - чистая прибыль
         pure_profit = self.count * (30 + predicated_n_days - self.day)
@@ -47,7 +48,7 @@ def read_input() -> tuple[int, List[Lot]]:
     Следущие строки имеют формат:
     <день> <название облигации в виде строки без пробелов> <цена> <количество>
     Последняя строка ввода пустая.
-    :return : средства тредера, лист лотов
+    :return : средства трейдера, лист лотов
     '''
     predicated_n_days, lots_num_day, traders_funds = map(int, input().split())
     lots = []
@@ -69,8 +70,11 @@ def get_all_accepted_combinations(
     traders_funds: int, lots: List[Lot]
 ) -> Iterator[tuple[int, ...]]:
     '''
-    Получить все возможные уникальные комбинации лотов, чья сумма покупки <=
-    сумме денежных средств трейдера. 
+    Получить все возможные уникальные комбинации лотов в формате генератора,
+    чья сумма покупки <= сумме денежных средств трейдера. 
+    :param traders_funds: сумма денежных средств трейдера
+    :param lots: предложенные лоты
+    :return : итератор по возможным комбинациям лотов
     '''
     lots_len = len(lots)
     for len_combination in range(1, lots_len + 1):
@@ -93,6 +97,10 @@ def get_full_profit_and_lot_sum(
     '''
     Получение общей суммы дохода данной комбинации лотов и суммы закупки данных
     лотов.
+    :param lots_id_tuple: кортеж id позиций лотов в изначальном листе
+    предложенных лотов
+    :param lots: лист предложенных лотов
+    :return : <общая сумма дохода>, <сумма закупки лотов>
     '''
     full_profit = 0
     full_lot_sum = 0
@@ -106,16 +114,22 @@ def get_best_lots_combination(
     accepted_lots_id_comb: Iterator[tuple[int, ...]], lots: List[Lot]
 ) -> tuple[int, tuple[int, ...]]:
     '''
-    Получение 
+    Получение наибольшей суммы прибыли и комбинации лотов с самой большой
+    суммарной прибылью.
+    :param accepted_lots_id_comb: итератор комбинаций id лотов
+    :param lots: лист предложенных лотов
+    :return : <общая максимальная сумма дохода>, <кортеж id лотов>
     '''
     max_final_profit = 0
     min_lot_sum = 0
     result_lots = []
     for combination in accepted_lots_id_comb:
         current_profit_sum, full_lot_sum = get_full_profit_and_lot_sum(
-            combination, lots)
+            combination, lots
+        )
         if current_profit_sum > max_final_profit or (
-                current_profit_sum == max_final_profit and full_lot_sum < min_lot_sum):
+                current_profit_sum == max_final_profit and
+                full_lot_sum < min_lot_sum):
             max_final_profit = current_profit_sum
             min_lot_sum = min_lot_sum
             result_lots = combination
@@ -125,11 +139,21 @@ def get_best_lots_combination(
 def pretty_print_result(
     full_profit: float, result_lots_ids: tuple[int, ...], lots: List[Lot]
 ) -> None:
+    '''
+    :param full_profit: общая максимальная сумма дохода
+    :param result_lots_ids: кортеж id лотов
+    :param lots: лист предложенных лотов
+    Вывод результата подсчета в формате:
+    <доход>
+    <день> <название облигации в виде строки без пробелов> <цена> <количество>
+    ...
+    <пустая строка>
+    '''
     print(full_profit)
     for lot_id in result_lots_ids:
         print(
             f'{lots[lot_id].day} {lots[lot_id].bond_name} '
-            '{lots[lot_id].price} {lots[lot_id].count}'
+            f'{lots[lot_id].price} {lots[lot_id].count}'
         )
     print('')
 
