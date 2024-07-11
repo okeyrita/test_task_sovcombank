@@ -4,6 +4,10 @@ from typing import Tuple, List
 
 def read_shares() -> Tuple[int, List[float]]:
     '''
+    Считывание входных данных в формате:
+    первая строка: количество долей
+    все последующие: числовое выражение доли
+    :return : <количество долей>, <лист выражений долей>
     '''
     number_of_shares = int(input())
     # read shares
@@ -18,13 +22,11 @@ def read_shares() -> Tuple[int, List[float]]:
 
 def print_percents_in_right_format(raw_share: float) -> None:
     '''
-    Print share percent with strictly 3 digits in the fractional part of the
-    number.
-    
+    Вывод процентного выражения доли строго с 3мя знаками после запятой.
+    :param : процентная доля
     '''
     cut_share = round(raw_share, 3)
     str_share = str(cut_share)
-    # 1.0 00
     right_percent_string = str_share + '0'*(5-len(str_share))
     print(right_percent_string)
 
